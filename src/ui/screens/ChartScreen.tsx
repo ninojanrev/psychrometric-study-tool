@@ -7,6 +7,8 @@ import { effectivePressure, useSettings } from '../../state/settings';
 import { useCurrent } from '../../state/current';
 import { usePoints } from '../../state/points';
 import { ReadoutCard } from '../components/ReadoutCard';
+import { BottomSheets } from '../components/BottomSheets';
+import { CalculatorSheet } from '../components/CalculatorSheet';
 
 export function ChartScreen() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -70,6 +72,11 @@ export function ChartScreen() {
       <button className="gear-btn" aria-label="Settings" onClick={() => useCurrent.getState().setOpenSheet('settings')}>⚙</button>
       <canvas ref={canvasRef} role="presentation" />
       <ReadoutCard />
+      <BottomSheets
+        calculator={<CalculatorSheet />}
+        converter={null}
+        settings={null}
+      />
     </div>
   );
 }
