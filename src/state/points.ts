@@ -14,7 +14,8 @@ const KEY = 'psychro-points-v1';
 function load(): SavedPoint[] {
   try {
     const raw = localStorage.getItem(KEY);
-    return raw ? (JSON.parse(raw) as SavedPoint[]) : [];
+    const parsed: unknown = raw ? JSON.parse(raw) : null;
+    return Array.isArray(parsed) ? parsed : [];
   } catch {
     return [];
   }

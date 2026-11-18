@@ -48,4 +48,12 @@ describe('points persistence', () => {
     expect(usePoints.getState().storageFailed).toBe(true);
     vi.restoreAllMocks();
   });
+  it('ignores non-array stored payloads', async () => {
+    vi.resetModules();
+    localStorage.setItem('psychro-points-v1', 'null');
+    const { usePoints: fresh } = await import('../src/state/points');
+    expect(fresh.getState().points).toEqual([]);
+    fresh.getState().add('R', airState(25, 0.009882, 101.325));
+    expect(fresh.getState().points).toHaveLength(1);
+  });
 });
