@@ -1,9 +1,5 @@
-function App() {
-  return (
-    <main>
-      <h1>Psychrometric Study Tool</h1>
-    </main>
-  )
-}
+import { ChartScreen } from './ui/screens/ChartScreen';
 
-export default App
+export default function App() {
+  return <ChartScreen />;
+}

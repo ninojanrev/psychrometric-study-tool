@@ -1,0 +1,100 @@
+:root {
+  --md-primary: #00639b;
+  --md-on-primary: #ffffff;
+  --md-primary-container: #cfe5ff;
+  --md-on-primary-container: #001d33;
+  --md-surface: #f8f9fb;
+  --md-surface-container: #edeff3;
+  --md-surface-container-high: #e6e8ec;
+  --md-on-surface: #191c1f;
+  --md-on-surface-variant: #42474d;
+  --md-outline: #72787f;
+  --md-error: #ba1a1a;
+  --md-scrim: rgba(0, 0, 0, 0.45);
+
+  --chart-grid: #d8dbe0;
+  --chart-grid-strong: #b9bec6;
+  --chart-axis: #191c1f;
+  --chart-rh: #7c86a0;
+  --chart-enthalpy: #a08a7c;
+  --chart-wetbulb: #6e9f8e;
+  --chart-volume: #a0a3ad;
+  --chart-saturation: #30343a;
+  --chart-label: #42474d;
+  --chart-probe: #00639b;
+  --chart-probe-fill: rgba(0, 99, 155, 0.18);
+  --chart-pin: #b3560e;
+  --chart-pin-text: #7a3a08;
+}
+
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; margin: 0; }
+body {
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  background: var(--md-surface);
+  color: var(--md-on-surface);
+  overscroll-behavior: none;
+}
+
+.chart-screen { position: fixed; inset: 0; display: flex; flex-direction: column; }
+.chart-screen canvas { flex: 1; width: 100%; min-height: 0; touch-action: none; display: block; }
+
+.readout-card {
+  background: var(--md-surface-container);
+  border-top: 1px solid var(--md-outline);
+  padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
+  max-height: 38vh;
+  overflow-y: auto;
+}
+.readout-values { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px 10px; margin: 8px 0; }
+.readout-values .k { font-size: 11px; color: var(--md-on-surface-variant); }
+.readout-values .v { font-size: 13px; font-weight: 600; }
+.fog-warning { color: var(--md-error); font-size: 12px; margin: 4px 0; }
+.readout-actions { display: flex; gap: 8px; }
+.btn {
+  flex: 1; padding: 10px 12px; border-radius: 18px; border: none;
+  background: var(--md-primary); color: var(--md-on-primary);
+  font-size: 14px; font-weight: 600;
+}
+.btn.secondary { background: var(--md-surface-container-high); color: var(--md-on-surface); }
+.gear-btn {
+  position: absolute; top: calc(10px + env(safe-area-inset-top)); right: 10px;
+  border: none; background: var(--md-surface-container); color: var(--md-on-surface);
+  width: 40px; height: 40px; border-radius: 20px; font-size: 18px;
+}
+.sheet-backdrop {
+  position: fixed; inset: 0; background: var(--md-scrim);
+  display: flex; align-items: flex-end; z-index: 20;
+}
+.sheet {
+  background: var(--md-surface-container);
+  border-radius: 24px 24px 0 0;
+  width: 100%; max-height: 88vh; overflow-y: auto;
+  padding: 16px 16px calc(20px + env(safe-area-inset-bottom));
+  animation: sheet-up 220ms cubic-bezier(0.2, 0, 0, 1);
+}
+@keyframes sheet-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.sheet h2 { font-size: 18px; margin: 0 0 12px; }
+.field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.field { display: flex; flex-direction: column; gap: 3px; }
+.field label { font-size: 12px; color: var(--md-on-surface-variant); }
+.field input, .field select {
+  padding: 10px; border-radius: 10px; border: 1px solid var(--md-outline);
+  background: var(--md-surface); color: var(--md-on-surface); font-size: 15px;
+}
+.field input:read-only { background: var(--md-surface-container-high); color: var(--md-on-surface-variant); }
+.status-line { font-size: 12px; color: var(--md-on-surface-variant); margin: 10px 0 4px; }
+.error-line { color: var(--md-error); font-size: 13px; margin: 6px 0; }
+.chip-row { display: flex; gap: 6px; overflow-x: auto; padding: 8px 14px 0; }
+.chip {
+  flex-shrink: 0; padding: 6px 12px; border-radius: 10px; border: 1px solid var(--md-outline);
+  background: var(--md-surface-container); color: var(--md-on-surface); font-size: 12px;
+}
+.segmented { display: flex; border: 1px solid var(--md-outline); border-radius: 20px; overflow: hidden; margin: 8px 0; }
+.segmented button {
+  flex: 1; padding: 10px; border: none; background: transparent; color: var(--md-on-surface);
+  font-size: 14px;
+}
+.segmented button.active { background: var(--md-primary-container); color: var(--md-on-primary-container); font-weight: 600; }
+.equation { font-size: 12px; background: var(--md-surface); border-radius: 8px; padding: 8px; margin: 6px 0; font-family: ui-monospace, monospace; white-space: pre-wrap; }
+.storage-warning { font-size: 11px; color: var(--md-error); padding: 4px 14px; }
