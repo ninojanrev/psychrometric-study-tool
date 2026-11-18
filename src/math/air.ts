@@ -79,8 +79,9 @@ export function dewPointFromPv(pv: number): number {
   return bisect((t) => pws(t) - pv, -60, 200);
 }
 
-export function degreeOfSaturation(w: number, twb: number, p: number): number {
-  return w / wFromPv(pws(twb), p);
+// ASHRAE Fundamentals ch. 1: degree of saturation mu = W / Ws at dry-bulb temperature
+export function degreeOfSaturation(tdb: number, w: number, p: number): number {
+  return w / wFromPv(pws(tdb), p);
 }
 
 export function airState(tdb: number, w: number, p: number): AirState {
@@ -95,6 +96,6 @@ export function airState(tdb: number, w: number, p: number): AirState {
     v: specificVolume(tdb, w, p),
     pv,
     pws: pws(tdb),
-    mu: degreeOfSaturation(w, twb, p),
+    mu: degreeOfSaturation(tdb, w, p),
   };
 }

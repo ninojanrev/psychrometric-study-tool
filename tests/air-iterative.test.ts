@@ -36,5 +36,11 @@ describe('airState assembly', () => {
     expect(s.pws).toBeCloseTo(3.1698, 2);
     expect(s.mu).toBeGreaterThan(0);
     expect(s.mu).toBeLessThanOrEqual(1);
+    // mu = W / Ws at dry-bulb (ASHRAE ch. 1): 0.4921 for 25 °C / W 0.009882 / 101.325 kPa
+    expect(s.mu).toBeCloseTo(0.4921, 4);
+    // Identity RH = mu / (1 - (1-mu) * pws/p) holds only for the tdb definition
+    const pvSat = pws(s.tdb);
+    const muIdentity = s.mu / (1 - (1 - s.mu) * pvSat / s.p);
+    expect(muIdentity).toBeCloseTo(s.rh, 3);
   });
 });
