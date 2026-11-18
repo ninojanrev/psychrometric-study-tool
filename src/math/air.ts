@@ -1,4 +1,6 @@
 // src/math/air.ts
+import type { AirState } from './types';
+
 export const R_DA = 287.055;  // J/(kg·K) dry air
 export const R_V = 461.495;   // J/(kg·K) water vapor
 export const W_RATIO = 0.621945; // R_DA / R_V
@@ -45,4 +47,54 @@ export function wFromEnthalpy(tdb: number, h: number): number {
 
 export function wFromVolume(tdb: number, v: number, p: number): number {
   return ((v * 1000 * p) / (R_DA * (tdb + 273.15)) - 1) / 1.607858;
+}
+
+// ASHRAE Fundamentals eq. 33: thermodynamic wet-bulb relation
+export function wFromWetBulb(tdb: number, twb: number, p: number): number {
+  const wsTwb = wFromPv(pws(twb), p);
+  return ((2501 - 2.326 * twb) * wsTwb - 1.006 * (tdb - twb))
+       / (2501 + 1.86 * tdb - 4.186 * twb);
+}
+
+// Generic monotonic bisection: find x in [lo, hi] with f(x) ≈ 0
+function bisect(f: (x: number) => number, lo: number, hi: number): number {
+  let a = lo, b = hi;
+  let fa = f(a);
+  for (let i = 0; i < 100; i++) {
+    const m = (a + b) / 2;
+    const fm = f(m);
+    if (fm === 0 || (b - a) < 1e-10) return m;
+    if (fa * fm < 0) { b = m; } else { a = m; fa = fm; }
+  }
+  return (a + b) / 2;
+}
+
+export function wetBulbFromTW(tdb: number, w: number, p: number): number {
+  // wFromWetBulb is strictly increasing in twb on [-60, tdb]
+  return bisect((twb) => wFromWetBulb(tdb, twb, p) - w, -60, tdb);
+}
+
+export function dewPointFromPv(pv: number): number {
+  // pws(T) is strictly increasing on [-60, 200]
+  return bisect((t) => pws(t) - pv, -60, 200);
+}
+
+export function degreeOfSaturation(w: number, twb: number, p: number): number {
+  return w / wFromPv(pws(twb), p);
+}
+
+export function airState(tdb: number, w: number, p: number): AirState {
+  const pv = pvFromW(w, p);
+  const twb = wetBulbFromTW(tdb, w, p);
+  return {
+    p, tdb, w,
+    rh: pv / pws(tdb),
+    twb,
+    tdp: dewPointFromPv(pv),
+    h: enthalpy(tdb, w),
+    v: specificVolume(tdb, w, p),
+    pv,
+    pws: pws(tdb),
+    mu: degreeOfSaturation(w, twb, p),
+  };
 }
