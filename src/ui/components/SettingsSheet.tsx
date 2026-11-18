@@ -21,7 +21,12 @@ export function SettingsSheet() {
         <input
           id="set-alt" type="number" inputMode="decimal"
           value={convert('altitude', settings.altitudeM, 'si', sys).toFixed(0)}
-          onChange={(e) => settings.setAltitudeM(convert('altitude', Number(e.target.value) || 0, sys, 'si'))}
+          onChange={(e) => {
+            const raw = e.target.value.trim();
+            // An empty field is mid-edit, not altitude 0 — leave the store alone.
+            if (raw === '') return;
+            settings.setAltitudeM(convert('altitude', Number(raw), sys, 'si'));
+          }}
         />
       </div>
       <div className="field">

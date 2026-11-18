@@ -2,10 +2,12 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { CalculatorSheet } from '../src/ui/components/CalculatorSheet';
+import { useCurrent } from '../src/state/current';
 import { useSettings } from '../src/state/settings';
 
 beforeEach(() => {
   useSettings.setState({ unitSystem: 'si', altitudeM: 0, pressureOverrideKPa: null });
+  useCurrent.setState({ probe: null, activePair: ['tdb', 'rh'] });
 });
 
 describe('CalculatorSheet', () => {
@@ -47,5 +49,36 @@ describe('CalculatorSheet', () => {
     fireEvent.change(screen.getByLabelText(/^Altitude/), { target: { value: '3000' } });
     const after = screen.getByLabelText(/spec\. volume/i).getAttribute('value');
     expect(after).not.toBe(before);
+  });
+
+  it('does not solve or show an error until both inputs have values', () => {
+    render(<CalculatorSheet />);
+    fireEvent.change(screen.getByLabelText(/dry-bulb/i), { target: { value: '25' } });
+    expect(screen.queryByText(/dew point can't be above/i)).not.toBeInTheDocument();
+    // jest-dom v7 reads an empty number input as null, not ''
+    expect(screen.getByLabelText(/wet-bulb/i)).toHaveValue(null);
+    expect(useCurrent.getState().probe).toBeNull();
+    fireEvent.change(screen.getByLabelText(/relative humidity/i), { target: { value: '50' } });
+    expect(screen.getByLabelText(/wet-bulb/i)).toHaveValue(17.9);
+  });
+
+  it('clearing a field clears the solve, error, and probe', () => {
+    render(<CalculatorSheet />);
+    fireEvent.change(screen.getByLabelText(/dry-bulb/i), { target: { value: '25' } });
+    fireEvent.change(screen.getByLabelText(/relative humidity/i), { target: { value: '50' } });
+    fireEvent.change(screen.getByLabelText(/relative humidity/i), { target: { value: '' } });
+    // jest-dom v7 reads an empty number input as null, not ''
+    expect(screen.getByLabelText(/wet-bulb/i)).toHaveValue(null);
+    expect(useCurrent.getState().probe).toBeNull();
+    expect(screen.queryByText(/dew point can't be above/i)).not.toBeInTheDocument();
+  });
+
+  it('clearing the altitude field does not reset the stored altitude', () => {
+    useSettings.setState({ unitSystem: 'si', altitudeM: 1500, pressureOverrideKPa: null });
+    render(<CalculatorSheet />);
+    fireEvent.change(screen.getByLabelText(/dry-bulb/i), { target: { value: '25' } });
+    fireEvent.change(screen.getByLabelText(/relative humidity/i), { target: { value: '50' } });
+    fireEvent.change(screen.getByLabelText(/^Altitude/), { target: { value: '' } });
+    expect(useSettings.getState().altitudeM).toBe(1500);
   });
 });

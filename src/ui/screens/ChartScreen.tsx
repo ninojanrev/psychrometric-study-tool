@@ -18,6 +18,13 @@ export function ChartScreen() {
   const vpRef = useRef<Viewport>(makeViewport());
   const [, setTick] = useState(0);
   const redraw = () => setTick((t) => t + 1);
+  // Subscribing re-renders on store changes, so the no-deps draw effect below
+  // re-runs with fresh snapshots — without this the canvas goes stale.
+  const probe = useCurrent((s) => s.probe);
+  const points = usePoints((s) => s.points);
+  const storageFailed = usePoints((s) => s.storageFailed);
+  const altitudeM = useSettings((s) => s.altitudeM);
+  const pressureOverrideKPa = useSettings((s) => s.pressureOverrideKPa);
 
   useEffect(() => {
     const canvas = canvasRef.current!;
@@ -62,13 +69,21 @@ export function ChartScreen() {
     if (!ctx) return;
     const dpr = window.devicePixelRatio || 1;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const s = useSettings.getState();
-    drawChart(ctx, vpRef.current, canvas.clientWidth, canvas.clientHeight, effectivePressure(s), {
-      probe: useCurrent.getState().probe,
-      points: usePoints.getState().points,
+    drawChart(ctx, vpRef.current, canvas.clientWidth, canvas.clientHeight, effectivePressure({ altitudeM, pressureOverrideKPa }), {
+      probe,
+      points,
       colors: chartColors(),
     });
   });
+
+  // Redraw when the theme flips (chartColors() reads CSS custom properties).
+  useEffect(() => {
+    if (typeof window.matchMedia !== 'function') return;
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const onChange = () => redraw();
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
 
   return (
     <div className="chart-screen">
@@ -76,6 +91,11 @@ export function ChartScreen() {
       <canvas ref={canvasRef} role="presentation" />
       <SavedPointsChips />
       <ReadoutCard />
+      {storageFailed && (
+        <div className="storage-warning" role="alert">
+          Storage unavailable — saved points will last only for this session.
+        </div>
+      )}
       <BottomSheets
         calculator={<CalculatorSheet />}
         converter={<ConverterSheet />}

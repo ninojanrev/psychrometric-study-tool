@@ -32,6 +32,13 @@ describe('SettingsSheet', () => {
     expect(useSettings.getState().altitudeM).toBeCloseTo(1500, 0);
   });
 
+  it('clearing the altitude field does not reset the stored altitude', () => {
+    useSettings.setState({ unitSystem: 'si', altitudeM: 1500, pressureOverrideKPa: null });
+    render(<SettingsSheet />);
+    fireEvent.change(screen.getByLabelText(/altitude/i), { target: { value: '' } });
+    expect(useSettings.getState().altitudeM).toBe(1500);
+  });
+
   it('clears all saved points after confirm', () => {
     vi.spyOn(window, 'confirm').mockReturnValue(true);
     usePoints.getState().add('X', airState(25, 0.01, 101.325));

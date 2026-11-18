@@ -60,9 +60,14 @@ export function CalculatorSheet() {
 
   const recompute = (pair: [PropertyName, PropertyName], t: Partial<Record<PropertyName, string>>, sys: UnitSystem) => {
     const [a, b] = pair;
-    const va = parseInput(a, t[a] ?? '', sys);
-    const vb = parseInput(b, t[b] ?? '', sys);
-    if (va === undefined || vb === undefined) { setResult(null); setError(null); return; }
+    const rawA = t[a] ?? '';
+    const rawB = t[b] ?? '';
+    // Guard empty members BEFORE parsing: Number('') is 0, which would feed a
+    // fake 0 into the solver (false physics errors, silent re-solves).
+    if (rawA === '' || rawB === '') { setResult(null); setError(null); setProbe(null); return; }
+    const va = parseInput(a, rawA, sys);
+    const vb = parseInput(b, rawB, sys);
+    if (va === undefined || vb === undefined) { setResult(null); setError(null); setProbe(null); return; }
     try {
       // read pressure from the store, not the render closure — altitude changes
       // update the store after this component last rendered
@@ -98,7 +103,10 @@ export function CalculatorSheet() {
           <input
             id="calc-alt" type="number" value={altDisplay}
             onChange={(e) => {
-              const m = convert('altitude', Number(e.target.value) || 0, sys, 'si');
+              const raw = e.target.value.trim();
+              // An empty field is mid-edit, not altitude 0 — leave the store alone.
+              if (raw === '') return;
+              const m = convert('altitude', Number(raw), sys, 'si');
               useSettings.getState().setAltitudeM(m);
               recompute(activePair, typed, sys);
             }}
