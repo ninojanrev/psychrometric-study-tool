@@ -1,5 +1,5 @@
 // src/chart/paths.ts
-import { R_DA, pws, wFromEnthalpy, wFromPv, wFromWetBulb } from '../math/air';
+import { pws, wFromEnthalpy, wFromPv, wFromVolume, wFromWetBulb } from '../math/air';
 import { ENVELOPE } from './envelope';
 import type { Viewport } from './viewport';
 
@@ -45,7 +45,7 @@ export function wetBulbPath(twb: number, vp: Viewport, p: number, n = 200): Pt[]
 }
 
 export function volumePath(vVal: number, vp: Viewport, p: number, n = 200): Pt[] {
-  return sample((t) => ((vVal * 1000 * p) / (R_DA * (t + 273.15)) - 1) / 1.607858, vp, n);
+  return sample((t) => wFromVolume(t, vVal, p), vp, n);
 }
 
 // Splits a continuous point list into sub-paths of consecutive in-viewport
