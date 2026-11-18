@@ -151,6 +151,11 @@ export function solveState(a: PropertyName, va: number, b: PropertyName, vb: num
   if (p <= 0) throw new SolveError('infeasible', 'Pressure must be positive.');
   const [tdb, w] = solveTW(a, va, b, vb, p);
   const state = airState(tdb, w, p);
+  // NaN slips past the comparison gates below (every NaN comparison is false),
+  // e.g. pws of a sub-absolute-zero temperature — so gate finiteness first.
+  if (!Number.isFinite(state.tdb) || !Number.isFinite(state.w)) {
+    throw new SolveError('infeasible', 'These values don\'t describe a possible state of moist air.');
+  }
   if (state.rh > FEASIBLE_RH_MAX) {
     throw new SolveError('infeasible', 'This combination holds more moisture than the air can — relative humidity exceeds 100 %. Check your values.');
   }

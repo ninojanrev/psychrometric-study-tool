@@ -57,6 +57,16 @@ describe('error cases', () => {
   it('non-finite input is rejected', () => {
     expect(() => solveState('tdb', NaN, 'rh', 0.5, 101.325)).toThrow(SolveError);
   });
+  it('sub-absolute-zero tdp is rejected as infeasible, never NaN output', () => {
+    let caught: unknown;
+    try {
+      solveState('tdp', -300, 'h', 20, 101.325);
+    } catch (e) {
+      caught = e;
+    }
+    expect(caught).toBeInstanceOf(SolveError);
+    expect((caught as SolveError).code).toBe('infeasible');
+  });
 });
 
 describe('cross-check vs psychrolib (dev-only)', () => {
