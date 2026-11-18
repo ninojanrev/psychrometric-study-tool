@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Psychrometric Study Tool</string>
+    <string name="title_activity_main">Psychrometric Study Tool</string>
+    <string name="package_name">com.learningmaterial.psychrometric</string>
+    <string name="custom_url_scheme">com.learningmaterial.psychrometric</string>
+</resources>

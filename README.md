@@ -1,32 +1,47 @@
-# React + TypeScript + Vite
+# Psychrometric Study Tool
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+An interactive psychrometric chart, state-point calculator, and unit converter for HVAC students. Mobile-first PWA with an installable Android APK.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Carrier-style psychrometric chart** (−10…55 °C, 0…0.033 kg/kg) with dry-bulb, saturation, RH, wet-bulb, enthalpy, and specific-volume line families. Pan, pinch-zoom (down to 1×), double-tap to reset, tap to probe any state point.
+- **State-point calculator** — enter any two of dry-bulb, wet-bulb, dew point, RH, humidity ratio, enthalpy, or specific volume; the rest are solved. Altitude or explicit pressure overrides supported.
+- **Equation walk-through** — each result shows the formulas used.
+- **Unit conversion** — SI ↔ IP across all seven properties, live.
+- **Saved points** — long-press the chart to save a state point; tap a chip to jump to it.
+- **Offline** — installable PWA (service worker precaches the app); the APK works fully offline out of the box.
 
-## React Compiler
+## Physics
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Property relations follow ASHRAE Fundamentals Handbook Ch. 1: Hyland–Wexler saturation pressure, the ASHRAE eq. 33 wet-bulb approximation, and ideal-gas humidity-ratio relations. Pressure at altitude: 101.325·(1 − 2.25577×10⁻⁵·h)^5.2559, valid −500…10 000 m. Verified against psychrolib.
 
-## Expanding the Oxlint configuration
+## Android APK
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+1. Download the APK from [Releases](../../releases).
+2. On the device, allow installing from unknown sources when prompted (the APK is debug-signed; not a Play Store build).
+3. Install — the app works offline, no network needed.
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+## Development
+
+```bash
+npm install
+npm run dev        # dev server
+npm test           # vitest suite
+npm run build      # production build to dist/ (includes service worker + icons)
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+### Android build
+
+Requires JDK 17 and an Android SDK (set `sdk.dir` in `android/local.properties`).
+
+```bash
+npm run build                    # web assets
+npx cap sync android             # copy dist/ + plugins into the Android project
+cd android && ./gradlew assembleDebug   # APK at app/build/outputs/apk/debug/
+```
+
+Launcher/splash icons are generated from `public/icon.svg`:
+
+```bash
+node scripts/gen-android-logo.mjs && npx capacitor-assets generate --android
+```
