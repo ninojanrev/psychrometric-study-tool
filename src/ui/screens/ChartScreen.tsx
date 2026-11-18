@@ -9,6 +9,7 @@ import { usePoints } from '../../state/points';
 import { ReadoutCard } from '../components/ReadoutCard';
 import { BottomSheets } from '../components/BottomSheets';
 import { CalculatorSheet } from '../components/CalculatorSheet';
+import { ConverterSheet } from '../components/ConverterSheet';
 
 export function ChartScreen() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -74,7 +75,7 @@ export function ChartScreen() {
       <ReadoutCard />
       <BottomSheets
         calculator={<CalculatorSheet />}
-        converter={null}
+        converter={<ConverterSheet />}
         settings={null}
       />
     </div>
