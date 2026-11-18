@@ -1,10 +1,11 @@
 import type { AirState } from '../../math/types';
 import type { SavedPoint } from '../../state/points';
+import { fmtTick, pickStep } from '../ticks';
 import {
   clipSegmentsToViewport, enthalpyPath, rhPath, saturationPath, volumePath, wetBulbPath,
   type Pt,
 } from '../paths';
-import { chartToPixel } from '../viewport';
+import { chartToPixel, plotRect } from '../viewport';
 import type { Viewport } from '../viewport';
 
 export interface ChartColors {
@@ -60,38 +61,40 @@ export function drawChart(
 ): void {
   const { colors, probe, points } = opts;
   ctx.clearRect(0, 0, width, height);
+  const r = plotRect(width, height);
 
-  // Minor grid with LOD
+  // Minor grid with LOD, bounded to the plot rect
   const ts = tStep(vp.tmax - vp.tmin);
   const ws = wStep(vp.wmax - vp.wmin);
   ctx.lineWidth = 0.5;
   ctx.strokeStyle = colors.grid;
   for (let t = Math.ceil(vp.tmin / ts) * ts; t <= vp.tmax; t += ts) {
     const { x } = chartToPixel(vp, t, 0, width, height);
-    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x, r.y); ctx.lineTo(x, r.y + r.h); ctx.stroke();
   }
   for (let w = Math.ceil(vp.wmin / ws) * ws; w <= vp.wmax; w += ws) {
     const { y } = chartToPixel(vp, 0, w, width, height);
-    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(r.x, y); ctx.lineTo(r.x + r.w, y); ctx.stroke();
   }
 
-  // Axis labels (every other line when dense)
+  // Axis labels: adaptive nice steps (never crowd), drawn in the gutters
   ctx.fillStyle = colors.axis;
-  ctx.font = '10px system-ui';
-  const tLabelEvery = ts * (width / (vp.tmax - vp.tmin)) < 36 ? 2 : 1;
-  let idx = 0;
-  for (let t = Math.ceil(vp.tmin / ts) * ts; t <= vp.tmax; t += ts, idx++) {
-    if (idx % tLabelEvery !== 0) continue;
-    const { x, y } = chartToPixel(vp, t, vp.wmin, width, height);
-    ctx.fillText(t.toFixed(ts < 1 ? 2 : 0), x - 8, Math.min(y - 4, height - 4));
+  ctx.font = '11px system-ui';
+  ctx.textAlign = 'center';
+  const ls = pickStep(vp.tmax - vp.tmin, r.w, 48);
+  for (let t = Math.ceil(vp.tmin / ls) * ls; t <= vp.tmax; t += ls) {
+    const { x } = chartToPixel(vp, t, 0, width, height);
+    if (x < r.x - 14 || x > r.x + r.w + 14) continue;
+    ctx.fillText(fmtTick(t, ls), x, height - 7);
   }
-  idx = 0;
-  const wLabelEvery = ws * (height / (vp.wmax - vp.wmin)) < 24 ? 2 : 1;
-  for (let w = Math.ceil(vp.wmin / ws) * ws; w <= vp.wmax; w += ws, idx++) {
-    if (idx % wLabelEvery !== 0) continue;
-    const { y } = chartToPixel(vp, vp.tmin, w, width, height);
-    ctx.fillText(w.toFixed(ws < 0.001 ? 4 : 3), 2, y - 2);
+  ctx.textAlign = 'right';
+  const lws = pickStep(vp.wmax - vp.wmin, r.h, 30);
+  for (let w = Math.ceil(vp.wmin / lws) * lws; w <= vp.wmax; w += lws) {
+    const { y } = chartToPixel(vp, 0, w, width, height);
+    if (y < r.y + 8 || y > r.y + r.h + 6) continue;
+    ctx.fillText(fmtTick(w, lws), r.x - 5, y + 4);
   }
+  ctx.textAlign = 'left';
 
   // RH lines 10–90 %
   ctx.lineWidth = 0.8;

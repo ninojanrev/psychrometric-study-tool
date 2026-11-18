@@ -6,6 +6,7 @@ import { fmtState } from '../format';
 export function ReadoutCard() {
   const probe = useCurrent((s) => s.probe);
   const probeIsFog = useCurrent((s) => s.probeIsFog);
+  const setProbe = useCurrent((s) => s.setProbe);
   const setOpenSheet = useCurrent((s) => s.setOpenSheet);
   const unitSystem = useSettings((s) => s.unitSystem);
   const addPoint = usePoints((s) => s.add);
@@ -13,7 +14,10 @@ export function ReadoutCard() {
   const values = fmtState(probe, unitSystem);
   return (
     <div className="readout-card">
-      <b>Probed point</b>
+      <div className="readout-head">
+        <b>Probed point</b>
+        <button className="icon-btn small" aria-label="Clear probed point" onClick={() => setProbe(null)}>✕</button>
+      </div>
       {probeIsFog && <div className="fog-warning">Fog region — this air holds more moisture than 100 % RH.</div>}
       <div className="readout-values">
         {values.map((v) => (

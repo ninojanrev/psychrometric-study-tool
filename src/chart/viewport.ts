@@ -5,6 +5,19 @@ export { ENVELOPE };
 
 export interface Viewport { tmin: number; tmax: number; wmin: number; wmax: number; }
 
+// Gutters the chart never draws into, so axis labels sit clear of the
+// screen edge. All pixel↔chart mapping is relative to this rect.
+export const PLOT_PAD = { left: 44, right: 8, top: 8, bottom: 22 } as const;
+
+export function plotRect(width: number, height: number) {
+  return {
+    x: PLOT_PAD.left,
+    y: PLOT_PAD.top,
+    w: Math.max(1, width - PLOT_PAD.left - PLOT_PAD.right),
+    h: Math.max(1, height - PLOT_PAD.top - PLOT_PAD.bottom),
+  };
+}
+
 export function makeViewport(): Viewport {
   return { ...ENVELOPE };
 }
@@ -23,16 +36,18 @@ function clamp(vp: Viewport): Viewport {
 }
 
 export function pixelToChart(vp: Viewport, x: number, y: number, width: number, height: number) {
+  const r = plotRect(width, height);
   return {
-    t: vp.tmin + (x / width) * (vp.tmax - vp.tmin),
-    w: vp.wmax - (y / height) * (vp.wmax - vp.wmin),
+    t: vp.tmin + ((x - r.x) / r.w) * (vp.tmax - vp.tmin),
+    w: vp.wmax - ((y - r.y) / r.h) * (vp.wmax - vp.wmin),
   };
 }
 
 export function chartToPixel(vp: Viewport, t: number, w: number, width: number, height: number) {
+  const r = plotRect(width, height);
   return {
-    x: ((t - vp.tmin) / (vp.tmax - vp.tmin)) * width,
-    y: ((vp.wmax - w) / (vp.wmax - vp.wmin)) * height,
+    x: r.x + ((t - vp.tmin) / (vp.tmax - vp.tmin)) * r.w,
+    y: r.y + ((vp.wmax - w) / (vp.wmax - vp.wmin)) * r.h,
   };
 }
 
@@ -55,5 +70,14 @@ export function panBy(vp: Viewport, dt: number, dw: number): Viewport {
   return clamp({
     tmin: vp.tmin + dt, tmax: vp.tmax + dt,
     wmin: vp.wmin + dw, wmax: vp.wmax + dw,
+  });
+}
+
+export function centerOn(vp: Viewport, t: number, w: number): Viewport {
+  const tSpan = vp.tmax - vp.tmin;
+  const wSpan = vp.wmax - vp.wmin;
+  return clamp({
+    tmin: t - tSpan / 2, tmax: t + tSpan / 2,
+    wmin: w - wSpan / 2, wmax: w + wSpan / 2,
   });
 }

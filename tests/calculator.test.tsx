@@ -82,6 +82,21 @@ describe('CalculatorSheet', () => {
     expect(useSettings.getState().altitudeM).toBe(1500);
   });
 
+  it('Clear inputs resets the fields, probe, and active pair', () => {
+    render(<CalculatorSheet />);
+    fireEvent.change(screen.getByLabelText(/dry-bulb/i), { target: { value: '25' } });
+    fireEvent.change(screen.getByLabelText(/relative humidity/i), { target: { value: '50' } });
+    fireEvent.change(screen.getByLabelText(/dew point/i), { target: { value: '13.8' } });
+    expect(useCurrent.getState().activePair).toEqual(['rh', 'tdp']);
+    fireEvent.click(screen.getByRole('button', { name: /clear inputs/i }));
+    expect(screen.getByLabelText(/dry-bulb/i)).toHaveValue(null);
+    expect(screen.getByLabelText(/wet-bulb/i)).toHaveValue(null);
+    expect(useCurrent.getState().probe).toBeNull();
+    expect(useCurrent.getState().activePair).toEqual(['tdb', 'rh']);
+    expect(screen.getByText(/Inputs:/)).toHaveTextContent('Dry-bulb');
+    expect(screen.getByText(/Inputs:/)).toHaveTextContent('Relative humidity');
+  });
+
   it('survives per-keystroke typing into the same field', () => {
     render(<CalculatorSheet />);
     fireEvent.change(screen.getByLabelText(/dry-bulb/i), { target: { value: '2' } });

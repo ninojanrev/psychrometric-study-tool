@@ -23,8 +23,9 @@ describe('ChartScreen', () => {
     expect(screen.getByText(/25\.0/)).toBeInTheDocument();
     expect(screen.getByText('50.0')).toBeInTheDocument(); // RH value; the key cell reads "RH (%)"
     expect(screen.getByText('RH (%)')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /calculator/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /convert/i })).toBeInTheDocument();
+    // app bar + readout actions both expose these labels
+    expect(screen.getAllByRole('button', { name: /calculator/i }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('button', { name: /convert/i }).length).toBeGreaterThan(0);
   });
 
   it('shows fog warning for supersaturated probes', () => {
@@ -37,7 +38,8 @@ describe('ChartScreen', () => {
     vi.spyOn(window, 'prompt').mockReturnValue('Q3 answer');
     render(<ChartScreen />);
     act(() => { useCurrent.getState().setProbe(airState(25, 0.009882, 101.325)); });
-    fireEvent.click(screen.getByRole('button', { name: /save/i }));
+    // the ReadoutCard's Save button, not the dock FAB ("Save probed point")
+    fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
     expect(usePoints.getState().points).toHaveLength(1);
     expect(usePoints.getState().points[0].label).toBe('Q3 answer');
     vi.restoreAllMocks();

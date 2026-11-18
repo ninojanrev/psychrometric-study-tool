@@ -1,21 +1,63 @@
 // tests/viewport.test.ts
 import { describe, expect, it } from 'vitest';
-import { ENVELOPE, chartToPixel, makeViewport, panBy, pixelToChart, zoomAt } from '../src/chart/viewport';
+import { ENVELOPE, PLOT_PAD, centerOn, chartToPixel, makeViewport, panBy, pixelToChart, plotRect, zoomAt } from '../src/chart/viewport';
 
 const W = 400, H = 300;
 
 describe('mapping', () => {
-  it('maps envelope corners to canvas corners (y up in chart, down in pixels)', () => {
+  it('maps envelope corners to the plot rect (axis gutters excluded)', () => {
     const vp = makeViewport();
     const tl = chartToPixel(vp, ENVELOPE.tmin, ENVELOPE.wmax, W, H);
     const br = chartToPixel(vp, ENVELOPE.tmax, ENVELOPE.wmin, W, H);
-    expect(tl).toEqual({ x: 0, y: 0 });
-    expect(br).toEqual({ x: W, y: H });
+    expect(tl).toEqual({ x: PLOT_PAD.left, y: PLOT_PAD.top });
+    expect(br).toEqual({ x: W - PLOT_PAD.right, y: H - PLOT_PAD.bottom });
+  });
+  it('plot rect leaves room for axis labels inside the canvas', () => {
+    const r = plotRect(W, H);
+    expect(r.x).toBeGreaterThanOrEqual(30); // y labels fit left of the plot
+    expect(r.y + r.h).toBeLessThanOrEqual(H - 14); // x labels fit below the plot
+    expect(r.w).toBeGreaterThan(0);
+    expect(r.h).toBeGreaterThan(0);
   });
   it('pixel→chart→pixel round trips', () => {
     const vp = makeViewport();
     const { t, w } = pixelToChart(vp, 137, 91, W, H);
     expect(chartToPixel(vp, t, w, W, H)).toEqual({ x: 137, y: 91 });
+  });
+});
+
+describe('centerOn', () => {
+  it('centers a chart point while keeping the current span', () => {
+    const vp = makeViewport();
+    const out = centerOn(vp, 22.5, 0.0165);
+    expect(out.tmax - out.tmin).toBeCloseTo(vp.tmax - vp.tmin, 10);
+    expect(out.wmax - out.wmin).toBeCloseTo(vp.wmax - vp.wmin, 10);
+    // point maps back to the center of the plot rect
+    const { x, y } = chartToPixel(out, 22.5, 0.0165, W, H);
+    const r = plotRect(W, H);
+    expect(x).toBeCloseTo(r.x + r.w / 2, 6);
+    expect(y).toBeCloseTo(r.y + r.h / 2, 6);
+  });
+  it('keeps a full-envelope view stable (clamped, point still visible)', () => {
+    const vp = makeViewport();
+    const out = centerOn(vp, 22.5, 0.0165);
+    expect(out.tmin).toBeGreaterThanOrEqual(ENVELOPE.tmin - 0.1 * 65 - 1e-9);
+    expect(out.tmax).toBeLessThanOrEqual(ENVELOPE.tmax + 0.1 * 65 + 1e-9);
+    const { x, y } = chartToPixel(out, 22.5, 0.0165, W, H);
+    const r = plotRect(W, H);
+    expect(x).toBeGreaterThanOrEqual(r.x);
+    expect(x).toBeLessThanOrEqual(r.x + r.w);
+    expect(y).toBeGreaterThanOrEqual(r.y);
+    expect(y).toBeLessThanOrEqual(r.y + r.h);
+  });
+  it('pans a deep-zoom view so the target lands mid-plot', () => {
+    let vp = zoomAt(makeViewport(), 0.01, 200, 150, W, H);
+    const target = { t: 40, w: 0.02 };
+    const out = centerOn(vp, target.t, target.w);
+    const { x, y } = chartToPixel(out, target.t, target.w, W, H);
+    const r = plotRect(W, H);
+    expect(x).toBeCloseTo(r.x + r.w / 2, 6);
+    expect(y).toBeCloseTo(r.y + r.h / 2, 6);
   });
 });
 

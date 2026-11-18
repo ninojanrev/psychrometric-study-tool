@@ -1,5 +1,5 @@
 // src/chart/engine.ts
-import { panBy, zoomAt } from './viewport';
+import { panBy, plotRect, zoomAt } from './viewport';
 import type { Viewport } from './viewport';
 
 export interface GestureHandlers {
@@ -31,9 +31,8 @@ export function attachGestures(canvas: HTMLCanvasElement, h: GestureHandlers): (
 
   const panByPixels = (dx: number, dy: number) => {
     const vp = h.getViewport();
-    const w = canvas.clientWidth || 1;
-    const ht = canvas.clientHeight || 1;
-    h.setViewport(panBy(vp, (-dx * (vp.tmax - vp.tmin)) / w, (dy * (vp.wmax - vp.wmin)) / ht));
+    const plot = plotRect(canvas.clientWidth || 1, canvas.clientHeight || 1);
+    h.setViewport(panBy(vp, (-dx * (vp.tmax - vp.tmin)) / plot.w, (dy * (vp.wmax - vp.wmin)) / plot.h));
   };
 
   const zoomBy = (factor: number, cx: number, cy: number) => {

@@ -9,20 +9,34 @@ beforeEach(() => {
 });
 
 describe('ConverterSheet', () => {
-  it('converts SI to IP in Units mode', () => {
+  it('Units mode converts SI → IP', () => {
     render(<ConverterSheet />);
-    fireEvent.click(screen.getByRole('button', { name: 'Units' }));
-    fireEvent.change(screen.getByLabelText(/value/i), { target: { value: '25' } });
-    expect(screen.getByText(/77\.0/)).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText(/SI \(/), { target: { value: '25' } });
+    expect(screen.getByLabelText(/IP \(/)).toHaveValue(77);
+    expect(screen.getByText(/either box/i)).toBeInTheDocument();
   });
 
-  it('shows all equivalents in Equivalents mode', () => {
+  it('Units mode converts IP → SI (two-way)', () => {
     render(<ConverterSheet />);
-    fireEvent.click(screen.getByRole('button', { name: 'Equivalents' }));
-    // the property select defaults to Relative humidity; type 50 % into its Value field
-    fireEvent.change(screen.getByLabelText('Value'), { target: { value: '50' } });
-    expect(screen.getByText(/17\.9/)).toBeInTheDocument(); // wet-bulb at 25 °C / 50 %
+    fireEvent.change(screen.getByLabelText(/IP \(/), { target: { value: '77' } });
+    expect(screen.getByLabelText(/SI \(/)).toHaveValue(25);
+  });
+
+  it('Air state mode lists every property at the state', () => {
+    render(<ConverterSheet />);
+    fireEvent.click(screen.getByRole('button', { name: 'Air state' }));
+    // defaults: 25 °C dry-bulb, known property Relative humidity (%)
+    fireEvent.change(screen.getByLabelText(/value/i), { target: { value: '50' } });
+    expect(screen.getByText(/17\.9/)).toBeInTheDocument(); // wet-bulb
     expect(screen.getByText(/13\.9/)).toBeInTheDocument(); // dew point
+    expect(screen.getByText(/All properties at this state:/i)).toBeInTheDocument();
+  });
+
+  it('Air state mode shows a plain-language error for infeasible input', () => {
+    render(<ConverterSheet />);
+    fireEvent.click(screen.getByRole('button', { name: 'Air state' }));
+    fireEvent.change(screen.getByLabelText(/value/i), { target: { value: '150' } });
+    expect(screen.getByRole('alert')).toHaveTextContent(/more moisture than the air can/i);
   });
 
   it('converts altitude to pressure', () => {

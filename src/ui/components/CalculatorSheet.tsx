@@ -115,12 +115,13 @@ export function CalculatorSheet() {
       </div>
       <div className="field-grid">
         {PROPS.map((prop) => {
-          const isInput = activePair.includes(prop) && typed[prop] !== undefined;
+          const isActive = activePair.includes(prop);
+          const isInput = isActive && typed[prop] !== undefined;
           const shown = isInput
             ? typed[prop]
             : display(prop, result ? result[prop] : undefined, sys, DIGITS[prop]);
           return (
-            <div className="field" key={prop}>
+            <div className={isActive ? 'field field-input' : 'field'} key={prop}>
               <label htmlFor={`calc-${prop}`}>{LABELS[prop]} ({unitSuffix(prop, sys)})</label>
               <input
                 id={`calc-${prop}`}
@@ -135,9 +136,20 @@ export function CalculatorSheet() {
         })}
       </div>
       <div className="status-line">
-        Inputs: {LABELS[activePair[0]]} ({unitSuffix(activePair[0], sys)}) + {LABELS[activePair[1]]} ({unitSuffix(activePair[1], sys)})
-        {' '}— the two fields you edited last are the inputs.
+        Inputs: {LABELS[activePair[0]]} ({unitSuffix(activePair[0], sys)}) + {LABELS[activePair[1]]} ({unitSuffix(activePair[1], sys)}) — edit any two fields; the last two you edit are the inputs.
       </div>
+      <button
+        className="btn secondary clear-btn"
+        onClick={() => {
+          setTyped({});
+          setResult(null);
+          setError(null);
+          setProbe(null);
+          setActivePair(['tdb', 'rh']);
+        }}
+      >
+        Clear inputs
+      </button>
       {error && <div className="error-line" role="alert">{error}</div>}
       <EquationCard state={result} />
     </div>
