@@ -21,6 +21,7 @@ export function ChartScreen() {
     const resize = () => {
       canvas.width = Math.round(canvas.clientWidth * dpr);
       canvas.height = Math.round(canvas.clientHeight * dpr);
+      redraw();
     };
     resize();
     const ro = new ResizeObserver(resize);
