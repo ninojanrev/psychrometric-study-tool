@@ -98,3 +98,34 @@ body {
 .segmented button.active { background: var(--md-primary-container); color: var(--md-on-primary-container); font-weight: 600; }
 .equation { font-size: 12px; background: var(--md-surface); border-radius: 8px; padding: 8px; margin: 6px 0; font-family: ui-monospace, monospace; white-space: pre-wrap; }
 .storage-warning { font-size: 11px; color: var(--md-error); padding: 4px 14px; }
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --md-primary: #9ccaff;
+    --md-on-primary: #003256;
+    --md-primary-container: #004b77;
+    --md-on-primary-container: #cfe5ff;
+    --md-surface: #111417;
+    --md-surface-container: #1d2024;
+    --md-surface-container-high: #282b2f;
+    --md-on-surface: #e1e2e5;
+    --md-on-surface-variant: #c0c4c9;
+    --md-outline: #8c9197;
+    --md-error: #ffb4ab;
+    --md-scrim: rgba(0, 0, 0, 0.6);
+
+    --chart-grid: #2c3036;
+    --chart-grid-strong: #3d434a;
+    --chart-axis: #e1e2e5;
+    --chart-rh: #8e97b8;
+    --chart-enthalpy: #b8a08e;
+    --chart-wetbulb: #85b8a5;
+    --chart-volume: #7d818c;
+    --chart-saturation: #e8eaee;
+    --chart-label: #c0c4c9;
+    --chart-probe: #9ccaff;
+    --chart-probe-fill: rgba(156, 202, 255, 0.2);
+    --chart-pin: #ffab6e;
+    --chart-pin-text: #ffc59c;
+  }
+}

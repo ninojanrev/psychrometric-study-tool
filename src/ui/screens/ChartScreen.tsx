@@ -11,6 +11,7 @@ import { SavedPointsChips } from '../components/SavedPointsChips';
 import { BottomSheets } from '../components/BottomSheets';
 import { CalculatorSheet } from '../components/CalculatorSheet';
 import { ConverterSheet } from '../components/ConverterSheet';
+import { SettingsSheet } from '../components/SettingsSheet';
 
 export function ChartScreen() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -78,7 +79,7 @@ export function ChartScreen() {
       <BottomSheets
         calculator={<CalculatorSheet />}
         converter={<ConverterSheet />}
-        settings={null}
+        settings={<SettingsSheet />}
       />
     </div>
   );
