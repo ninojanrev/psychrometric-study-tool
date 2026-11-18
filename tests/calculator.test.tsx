@@ -81,4 +81,14 @@ describe('CalculatorSheet', () => {
     fireEvent.change(screen.getByLabelText(/^Altitude/), { target: { value: '' } });
     expect(useSettings.getState().altitudeM).toBe(1500);
   });
+
+  it('survives per-keystroke typing into the same field', () => {
+    render(<CalculatorSheet />);
+    fireEvent.change(screen.getByLabelText(/dry-bulb/i), { target: { value: '2' } });
+    fireEvent.change(screen.getByLabelText(/dry-bulb/i), { target: { value: '25' } });
+    fireEvent.change(screen.getByLabelText(/relative humidity/i), { target: { value: '5' } });
+    fireEvent.change(screen.getByLabelText(/relative humidity/i), { target: { value: '50' } });
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.getByLabelText(/wet-bulb/i)).toHaveValue(17.9);
+  });
 });

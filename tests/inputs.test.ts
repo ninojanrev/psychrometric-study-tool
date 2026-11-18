@@ -9,4 +9,7 @@ describe('pushEdit rolling-pair rule', () => {
   it('re-editing a property moves it to the end', () => {
     expect(pushEdit(['rh', 'twb'], 'rh')).toEqual(['twb', 'rh']);
   });
+  it('editing the newest member again keeps the pair stable', () => {
+    expect(pushEdit(['rh', 'tdb'], 'tdb')).toEqual(['rh', 'tdb']);
+  });
 });
