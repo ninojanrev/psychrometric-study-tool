@@ -7,6 +7,7 @@ import { effectivePressure, useSettings } from '../../state/settings';
 import { useCurrent } from '../../state/current';
 import { usePoints } from '../../state/points';
 import { ReadoutCard } from '../components/ReadoutCard';
+import { SavedPointsChips } from '../components/SavedPointsChips';
 import { BottomSheets } from '../components/BottomSheets';
 import { CalculatorSheet } from '../components/CalculatorSheet';
 import { ConverterSheet } from '../components/ConverterSheet';
@@ -72,6 +73,7 @@ export function ChartScreen() {
     <div className="chart-screen">
       <button className="gear-btn" aria-label="Settings" onClick={() => useCurrent.getState().setOpenSheet('settings')}>⚙</button>
       <canvas ref={canvasRef} role="presentation" />
+      <SavedPointsChips />
       <ReadoutCard />
       <BottomSheets
         calculator={<CalculatorSheet />}
