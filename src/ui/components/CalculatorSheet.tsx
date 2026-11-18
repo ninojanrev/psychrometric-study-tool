@@ -5,6 +5,7 @@ import { convert, type UnitSystem } from '../../math/units';
 import { pushEdit } from '../../state/inputs';
 import { effectivePressure, useSettings } from '../../state/settings';
 import { useCurrent } from '../../state/current';
+import { EquationCard } from './EquationCard';
 
 const PROPS: PropertyName[] = ['tdb', 'twb', 'tdp', 'rh', 'w', 'h', 'v'];
 
@@ -130,6 +131,7 @@ export function CalculatorSheet() {
         {' '}— the two fields you edited last are the inputs.
       </div>
       {error && <div className="error-line" role="alert">{error}</div>}
+      <EquationCard state={result} />
     </div>
   );
 }
