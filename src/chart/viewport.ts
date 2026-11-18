@@ -38,8 +38,9 @@ export function chartToPixel(vp: Viewport, t: number, w: number, width: number, 
 
 export function zoomAt(vp: Viewport, factor: number, px: number, py: number, width: number, height: number): Viewport {
   const focus = pixelToChart(vp, px, py, width, height);
-  const tSpan = Math.max(MIN_SPAN_T, (vp.tmax - vp.tmin) * factor);
-  const wSpan = Math.max(MIN_SPAN_T * (ENVELOPE.wmax / (ENVELOPE.tmax - ENVELOPE.tmin)), (vp.wmax - vp.wmin) * factor);
+  // Zoom window clamped to 1× (full envelope span) … 600× of envelope.
+  const tSpan = Math.min(ENVELOPE.tmax - ENVELOPE.tmin, Math.max(MIN_SPAN_T, (vp.tmax - vp.tmin) * factor));
+  const wSpan = Math.min(ENVELOPE.wmax - ENVELOPE.wmin, Math.max(MIN_SPAN_T * (ENVELOPE.wmax / (ENVELOPE.tmax - ENVELOPE.tmin)), (vp.wmax - vp.wmin) * factor));
   const tRat = (focus.t - vp.tmin) / (vp.tmax - vp.tmin);
   const wRat = (focus.w - vp.wmin) / (vp.wmax - vp.wmin);
   return clamp({

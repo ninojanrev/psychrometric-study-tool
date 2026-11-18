@@ -35,6 +35,25 @@ describe('zoomAt', () => {
     expect(vp.tmax - vp.tmin).toBeGreaterThan(65 / 600 - 1e-6);
     expect(vp.tmax - vp.tmin).toBeLessThan(65 / 600 + 1e-3);
   });
+  it('clamps zoom-out to the full envelope view (1×)', () => {
+    const vp = zoomAt(makeViewport(), 2, 200, 150, W, H);
+    expect(vp.tmax - vp.tmin).toBe(65); // exact clamped span: 55 - (-10)
+    expect(vp.wmax - vp.wmin).toBeCloseTo(ENVELOPE.wmax - ENVELOPE.wmin, 12);
+    expect(vp.tmin).toBeGreaterThanOrEqual(ENVELOPE.tmin);
+    expect(vp.tmax).toBeLessThanOrEqual(ENVELOPE.tmax);
+    expect(vp.wmin).toBeGreaterThanOrEqual(ENVELOPE.wmin);
+    expect(vp.wmax).toBeLessThanOrEqual(ENVELOPE.wmax);
+  });
+  it('preserves the anchor through a zoom-in within an already zoomed state', () => {
+    let vp = makeViewport();
+    const anchor = { x: 260, y: 90 };
+    vp = zoomAt(vp, 0.5, anchor.x, anchor.y, W, H); // first zoom-in creates the zoomed state
+    const focus = pixelToChart(vp, anchor.x, anchor.y, W, H);
+    vp = zoomAt(vp, 0.5, anchor.x, anchor.y, W, H); // zoom in again within the zoomed state
+    const back = chartToPixel(vp, focus.t, focus.w, W, H);
+    expect(back.x).toBeCloseTo(anchor.x, 6);
+    expect(back.y).toBeCloseTo(anchor.y, 6);
+  });
 });
 
 describe('panBy', () => {
